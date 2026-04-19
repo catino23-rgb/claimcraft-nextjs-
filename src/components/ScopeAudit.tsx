@@ -1,12 +1,12 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
-import { Claim } from '../types';
+import type { Claim, Screen } from '../types';
 import BackButton from './BackButton';
 
 interface ScopeAuditProps {
   claim: Claim;
-  setScreen: (screen: string) => void;
+  setScreen: (screen: Screen) => void;
 }
 
 function SeverityDot({ severity }: { severity: string }) {

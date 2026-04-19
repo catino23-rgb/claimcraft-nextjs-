@@ -1,12 +1,12 @@
 'use client';
 
 import { AlertTriangle } from 'lucide-react';
-import { Claim } from '../types';
+import type { Claim, Screen } from '../types';
 import BackButton from './BackButton';
 
 interface PolicyAnalysisProps {
   claim: Claim;
-  setScreen: (screen: string) => void;
+  setScreen: (screen: Screen) => void;
 }
 
 function PolicySummaryCard({ label, value, note, highlight }: { label: string; value: string; note: string; highlight?: boolean }) {

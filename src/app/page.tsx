@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Dashboard from '../components/Dashboard';
 import ClaimDetail from '../components/ClaimDetail';
@@ -9,25 +9,65 @@ import PolicyAnalysis from '../components/PolicyAnalysis';
 import PhotoGuide from '../components/PhotoGuide';
 import SupplementBuilder from '../components/SupplementBuilder';
 import NewClaim from '../components/NewClaim';
-import { Claim } from '../types';
+import { Claim, ClaimFile, Screen } from '../types';
+import { getDefaultClaims, loadClaims, saveClaims } from '../lib/claim-storage';
 
 export default function ClaimCraftPrototype() {
-  const [screen, setScreen] = useState('dashboard');
+  const [screen, setScreen] = useState<Screen>('dashboard');
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [claims, setClaims] = useState<Claim[]>(getDefaultClaims());
+  const [hydrated, setHydrated] = useState(false);
 
-  const claims: Claim[] = [
-    { id: 1, address: '142 Maple Ridge Dr, Austin TX', type: 'Hail · Roof', date: 'Apr 12, 2026', status: 'Scope Audit Ready', carrier: 'State Farm', initialOffer: 8420, estimatedValue: 23680, gap: 15260 },
-    { id: 2, address: '88 Harbor Lane, Tampa FL', type: 'Wind · Roof + Fence', date: 'Apr 8, 2026', status: 'Photos Complete', carrier: 'Citizens', initialOffer: 12300, estimatedValue: 19450, gap: 7150 },
-    { id: 3, address: '2410 Oak Hollow, Denver CO', type: 'Water · Interior', date: 'Apr 3, 2026', status: 'Supplement Sent', carrier: 'USAA', initialOffer: 4800, estimatedValue: 11200, gap: 6400 }
-  ];
+  useEffect(() => {
+    const stored = loadClaims();
+    setClaims(stored);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) {
+      saveClaims(claims);
+    }
+  }, [claims, hydrated]);
+
+  const openClaim = (claim: Claim) => {
+    setSelectedClaim(claim);
+    setScreen('claim');
+  };
+
+  const createClaim = (incoming: { address: string; type: string; date: string; carrier: string; files: ClaimFile[] }) => {
+    const initialOffer = 9500;
+    const estimatedValue = 19600;
+    const newClaim: Claim = {
+      id: Date.now(),
+      address: incoming.address,
+      type: incoming.type,
+      date: incoming.date,
+      status: 'Photos Complete',
+      carrier: incoming.carrier,
+      initialOffer,
+      estimatedValue,
+      gap: estimatedValue - initialOffer,
+      files: incoming.files
+    };
+
+    setClaims((prev) => [...prev, newClaim]);
+    setSelectedClaim(newClaim);
+    setScreen('claim');
+  };
+
+  const updateClaim = (updatedClaim: Claim) => {
+    setClaims((prev) => prev.map((claim) => (claim.id === updatedClaim.id ? updatedClaim : claim)));
+    setSelectedClaim(updatedClaim);
+  };
 
   return (
     <div className="min-h-screen bg-stone-50" style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
       <Header screen={screen} setScreen={setScreen} />
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {screen === 'dashboard' && <Dashboard claims={claims} onOpen={(c) => { setSelectedClaim(c); setScreen('claim'); }} setScreen={setScreen} />}
-        {screen === 'claim' && selectedClaim && <ClaimDetail claim={selectedClaim} setScreen={setScreen} />}
-        {screen === 'new' && <NewClaim setScreen={setScreen} />}
+        {screen === 'dashboard' && <Dashboard claims={claims} onOpen={openClaim} setScreen={setScreen} />}
+        {screen === 'claim' && selectedClaim && <ClaimDetail claim={selectedClaim} setScreen={setScreen} onUpdateClaim={updateClaim} />}
+        {screen === 'new' && <NewClaim setScreen={setScreen} onCreateClaim={createClaim} />}
         {screen === 'scope' && selectedClaim && <ScopeAudit claim={selectedClaim} setScreen={setScreen} />}
         {screen === 'policy' && selectedClaim && <PolicyAnalysis claim={selectedClaim} setScreen={setScreen} />}
         {screen === 'photos' && selectedClaim && <PhotoGuide claim={selectedClaim} setScreen={setScreen} />}

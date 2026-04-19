@@ -1,12 +1,12 @@
 'use client';
 
 import { Plus, ChevronRight, Upload, FileSearch, AlertTriangle, Send } from 'lucide-react';
-import { Claim } from '../types';
+import type { Claim, Screen } from '../types';
 
 interface DashboardProps {
   claims: Claim[];
   onOpen: (claim: Claim) => void;
-  setScreen: (screen: string) => void;
+  setScreen: (screen: Screen) => void;
 }
 
 function StatCard({ value, label, highlight }: { value: string; label: string; highlight?: boolean }) {
@@ -46,9 +46,9 @@ export default function Dashboard({ claims, onOpen, setScreen }: DashboardProps)
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <StatCard value="3" label="Active Claims" />
-        <StatCard value="$46,330" label="Initial Offers" />
-        <StatCard value="$54,330" label="Est. Rightful Value" />
+        <StatCard value={`${claims.length}`} label="Active Claims" />
+        <StatCard value={`$${claims.reduce((total, claim) => total + claim.initialOffer, 0).toLocaleString()}`} label="Initial Offers" />
+        <StatCard value={`$${claims.reduce((total, claim) => total + claim.estimatedValue, 0).toLocaleString()}`} label="Est. Rightful Value" />
         <StatCard value={`$${totalGap.toLocaleString()}`} label="Recovery Gap" highlight />
       </div>
 
@@ -83,10 +83,10 @@ export default function Dashboard({ claims, onOpen, setScreen }: DashboardProps)
       <div className="mt-8 bg-amber-50 border-l-4 border-amber-500 p-5">
         <div className="text-[10px] tracking-[0.2em] uppercase font-bold text-amber-700 mb-1">How ClaimCraft Works</div>
         <div className="grid grid-cols-4 gap-4 mt-3">
-          <WorkflowStep num="01" icon={require('lucide-react').Upload} title="Upload" desc="Policy, carrier estimate, photos" />
-          <WorkflowStep num="02" icon={require('lucide-react').FileSearch} title="Analyze" desc="AI extracts coverage, pricing, scope" />
-          <WorkflowStep num="03" icon={require('lucide-react').AlertTriangle} title="Flag" desc="Missing line items, code gaps, pricing" />
-          <WorkflowStep num="04" icon={require('lucide-react').Send} title="Supplement" desc="Generate formal letter with citations" />
+          <WorkflowStep num="01" icon={Upload} title="Upload" desc="Policy, carrier estimate, photos" />
+          <WorkflowStep num="02" icon={FileSearch} title="Analyze" desc="AI extracts coverage, pricing, scope" />
+          <WorkflowStep num="03" icon={AlertTriangle} title="Flag" desc="Missing line items, code gaps, pricing" />
+          <WorkflowStep num="04" icon={Send} title="Supplement" desc="Generate formal letter with citations" />
         </div>
       </div>
     </div>

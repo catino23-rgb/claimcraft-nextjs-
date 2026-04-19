@@ -1,10 +1,11 @@
 'use client';
 
 import { Shield } from 'lucide-react';
+import type { Screen } from '../types';
 
 interface HeaderProps {
-  screen: string;
-  setScreen: (screen: string) => void;
+  screen: Screen;
+  setScreen: (screen: Screen) => void;
 }
 
 export default function Header({ screen, setScreen }: HeaderProps) {

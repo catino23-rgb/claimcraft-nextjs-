@@ -1,12 +1,12 @@
 'use client';
 
 import { Eye } from 'lucide-react';
-import { Claim } from '../types';
+import type { Claim, Screen } from '../types';
 import BackButton from './BackButton';
 
 interface SupplementBuilderProps {
   claim: Claim;
-  setScreen: (screen: string) => void;
+  setScreen: (screen: Screen) => void;
 }
 
 export default function SupplementBuilder({ claim, setScreen }: SupplementBuilderProps) {
@@ -21,7 +21,7 @@ export default function SupplementBuilder({ claim, setScreen }: SupplementBuilde
         </div>
         <div className="flex gap-2">
           <button className="px-4 py-2 text-sm border border-stone-300 text-stone-700 tracking-wider uppercase hover:border-slate-900">Export DOCX</button>
-          <button className="px-4 py-2 text-sm bg-slate-900 text-amber-500 tracking-wider uppercase font-semibold hover:bg-slate-800">Send to Client</button>
+          <button className="px-4 py-2 text-sm bg-slate-900 text-amber-500 tracking-wider uppercase font-semibold hover:bg-slate-800">Mark Ready for Review</button>
         </div>
       </div>
 

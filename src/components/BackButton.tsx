@@ -1,10 +1,11 @@
 'use client';
 
 import { ArrowLeft } from 'lucide-react';
+import type { Screen } from '../types';
 
 interface BackButtonProps {
-  setScreen: (screen: string) => void;
-  to?: string;
+  setScreen: (screen: Screen) => void;
+  to?: Screen;
   label?: string;
 }
 

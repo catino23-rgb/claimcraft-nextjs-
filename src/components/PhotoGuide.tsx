@@ -1,12 +1,12 @@
 'use client';
 
 import { Camera, CheckCircle2, XCircle } from 'lucide-react';
-import { Claim } from '../types';
+import type { Claim, Screen } from '../types';
 import BackButton from './BackButton';
 
 interface PhotoGuideProps {
   claim: Claim;
-  setScreen: (screen: string) => void;
+  setScreen: (screen: Screen) => void;
 }
 
 export default function PhotoGuide({ claim, setScreen }: PhotoGuideProps) {
