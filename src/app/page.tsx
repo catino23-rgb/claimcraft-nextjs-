@@ -1,65 +1,41 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+import Header from '../components/Header';
+import Dashboard from '../components/Dashboard';
+import ClaimDetail from '../components/ClaimDetail';
+import ScopeAudit from '../components/ScopeAudit';
+import PolicyAnalysis from '../components/PolicyAnalysis';
+import PhotoGuide from '../components/PhotoGuide';
+import SupplementBuilder from '../components/SupplementBuilder';
+import NewClaim from '../components/NewClaim';
+import { Claim } from '../types';
+
+export default function ClaimCraftPrototype() {
+  const [screen, setScreen] = useState('dashboard');
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+
+  const claims: Claim[] = [
+    { id: 1, address: '142 Maple Ridge Dr, Austin TX', type: 'Hail · Roof', date: 'Apr 12, 2026', status: 'Scope Audit Ready', carrier: 'State Farm', initialOffer: 8420, estimatedValue: 23680, gap: 15260 },
+    { id: 2, address: '88 Harbor Lane, Tampa FL', type: 'Wind · Roof + Fence', date: 'Apr 8, 2026', status: 'Photos Complete', carrier: 'Citizens', initialOffer: 12300, estimatedValue: 19450, gap: 7150 },
+    { id: 3, address: '2410 Oak Hollow, Denver CO', type: 'Water · Interior', date: 'Apr 3, 2026', status: 'Supplement Sent', carrier: 'USAA', initialOffer: 4800, estimatedValue: 11200, gap: 6400 }
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen bg-stone-50" style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
+      <Header screen={screen} setScreen={setScreen} />
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {screen === 'dashboard' && <Dashboard claims={claims} onOpen={(c) => { setSelectedClaim(c); setScreen('claim'); }} setScreen={setScreen} />}
+        {screen === 'claim' && selectedClaim && <ClaimDetail claim={selectedClaim} setScreen={setScreen} />}
+        {screen === 'new' && <NewClaim setScreen={setScreen} />}
+        {screen === 'scope' && selectedClaim && <ScopeAudit claim={selectedClaim} setScreen={setScreen} />}
+        {screen === 'policy' && selectedClaim && <PolicyAnalysis claim={selectedClaim} setScreen={setScreen} />}
+        {screen === 'photos' && selectedClaim && <PhotoGuide claim={selectedClaim} setScreen={setScreen} />}
+        {screen === 'supplement' && selectedClaim && <SupplementBuilder claim={selectedClaim} setScreen={setScreen} />}
       </main>
+      <footer className="max-w-6xl mx-auto px-6 py-6 text-xs text-stone-500 border-t border-stone-200 mt-12">
+        <p>ClaimCraft · Prototype · Not legal or regulatory advice · Software produces documents for review by licensed representatives</p>
+      </footer>
     </div>
   );
 }
