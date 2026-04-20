@@ -1,81 +1,47 @@
-'use client';
+import { redirect } from 'next/navigation';
+import ClaimCraftApp from '../components/ClaimCraftApp';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 
-import { useEffect, useState } from 'react';
-import Header from '../components/Header';
-import Dashboard from '../components/Dashboard';
-import ClaimDetail from '../components/ClaimDetail';
-import ScopeAudit from '../components/ScopeAudit';
-import PolicyAnalysis from '../components/PolicyAnalysis';
-import PhotoGuide from '../components/PhotoGuide';
-import SupplementBuilder from '../components/SupplementBuilder';
-import NewClaim from '../components/NewClaim';
-import { Claim, ClaimFile, Screen } from '../types';
-import { getDefaultClaims, loadClaims, saveClaims } from '../lib/claim-storage';
+export default async function Page() {
+  // Local-only fallback: if Supabase env vars aren't set, skip the auth
+  // gate and render the app in localStorage-only mode.
+  if (!isSupabaseConfigured()) {
+    return (
+      <ClaimCraftApp
+        userEmail={null}
+        fullName={null}
+        organizationName={null}
+      />
+    );
+  }
 
-export default function ClaimCraftPrototype() {
-  const [screen, setScreen] = useState<Screen>('dashboard');
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
-  const [claims, setClaims] = useState<Claim[]>(getDefaultClaims());
-  const [hydrated, setHydrated] = useState(false);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    const stored = loadClaims();
-    setClaims(stored);
-    setHydrated(true);
-  }, []);
+  if (!user) {
+    redirect('/login');
+  }
 
-  useEffect(() => {
-    if (hydrated) {
-      saveClaims(claims);
-    }
-  }, [claims, hydrated]);
+  // Fetch profile + organization name for Header. If the profile read fails
+  // (e.g. bootstrap race), fall back to the user's email and "ClaimCraft".
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email, full_name, organizations ( name )')
+    .eq('id', user.id)
+    .maybeSingle();
 
-  const openClaim = (claim: Claim) => {
-    setSelectedClaim(claim);
-    setScreen('claim');
-  };
-
-  const createClaim = (incoming: { address: string; type: string; date: string; carrier: string; files: ClaimFile[] }) => {
-    const initialOffer = 9500;
-    const estimatedValue = 19600;
-    const newClaim: Claim = {
-      id: Date.now(),
-      address: incoming.address,
-      type: incoming.type,
-      date: incoming.date,
-      status: 'Photos Complete',
-      carrier: incoming.carrier,
-      initialOffer,
-      estimatedValue,
-      gap: estimatedValue - initialOffer,
-      files: incoming.files
-    };
-
-    setClaims((prev) => [...prev, newClaim]);
-    setSelectedClaim(newClaim);
-    setScreen('claim');
-  };
-
-  const updateClaim = (updatedClaim: Claim) => {
-    setClaims((prev) => prev.map((claim) => (claim.id === updatedClaim.id ? updatedClaim : claim)));
-    setSelectedClaim(updatedClaim);
-  };
+  const organizations = profile?.organizations as { name: string } | { name: string }[] | null | undefined;
+  const orgName = Array.isArray(organizations)
+    ? organizations[0]?.name ?? null
+    : organizations?.name ?? null;
 
   return (
-    <div className="min-h-screen bg-stone-50" style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
-      <Header screen={screen} setScreen={setScreen} />
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {screen === 'dashboard' && <Dashboard claims={claims} onOpen={openClaim} setScreen={setScreen} />}
-        {screen === 'claim' && selectedClaim && <ClaimDetail claim={selectedClaim} setScreen={setScreen} onUpdateClaim={updateClaim} />}
-        {screen === 'new' && <NewClaim setScreen={setScreen} onCreateClaim={createClaim} />}
-        {screen === 'scope' && selectedClaim && <ScopeAudit claim={selectedClaim} setScreen={setScreen} />}
-        {screen === 'policy' && selectedClaim && <PolicyAnalysis claim={selectedClaim} setScreen={setScreen} />}
-        {screen === 'photos' && selectedClaim && <PhotoGuide claim={selectedClaim} setScreen={setScreen} />}
-        {screen === 'supplement' && selectedClaim && <SupplementBuilder claim={selectedClaim} setScreen={setScreen} />}
-      </main>
-      <footer className="max-w-6xl mx-auto px-6 py-6 text-xs text-stone-500 border-t border-stone-200 mt-12">
-        <p>ClaimCraft · Prototype · Not legal or regulatory advice · Software produces documents for review by licensed representatives</p>
-      </footer>
-    </div>
+    <ClaimCraftApp
+      userEmail={profile?.email ?? user.email ?? null}
+      fullName={profile?.full_name ?? null}
+      organizationName={orgName ?? 'ClaimCraft'}
+    />
   );
 }
